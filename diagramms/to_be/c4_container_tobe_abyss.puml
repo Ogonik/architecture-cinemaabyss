@@ -1,0 +1,141 @@
+@startuml Basic Sample
+!include ../lib/C4_Container.puml
+title
+General <u>Container diagram</u> TO BE for Cinema Abyss Application
+end title
+
+
+
+Person(user, "Пользователь")
+
+System_Ext(onlinecimena, "Онлайн кинотеатры")
+System_Ext(payment_system, "Платежная система")
+
+Boundary(recommendation_system, "Внешняя рекомендательная система"){
+    System_Ext(recommendation_system_back, "Приложение внешней рекомендательной системы")
+    SystemQueue_Ext(recommendation_system_queue, "Брокер рекомендательной системы", "RabbitMQ", )
+}
+
+Container_Ext(ca_postman, "Тест обработки сообщений кафки ", "Go")
+
+
+Boundary(ca, "Cinema Abyss") {
+    System_Boundary(sm_bound, "Cinema Abyss Application") {
+
+        Boundary(frontend, "Frontend area"){
+            Container_Ext(front_web, "Frontend SPA WEB", "React")
+            Container_Ext(front_android, "Mobile App Andriod", "React?")
+            Container_Ext(front_ios, "Mobile App iOS", "React?")
+            Container_Ext(front_tv, "Mobile App Smart TV", "React?")
+        }
+
+        Boundary(backend, "Backend and DB area") {
+           
+            Boundary(ca_microservices, "Новые микросервисы to be архитектуры") {
+
+                Container(ca_proxy, "API Gateway (постепенная миграция с монолита", "C#", )
+
+                Container(ca_general_logic, "Пользователи, подписки, онлайн кинотеатры", "Go, PgSQL", )
+                Container(ca_movies_metadata, "Метаданные фильмов", "Go, PgSQL", )
+                Container(ca_storage, "Сервис-обертка S3", "Go", )
+                Container(ca_ratings, "Оценки пользователей", "Go, PgSQL", )
+                Container(ca_payments, "Платежный гейт", "Go, PgSQL")
+                Container(ca_recommendations, "Шлюз в рекомендателньую систему", "Go")
+
+                BiRel(ca_proxy, ca_general_logic, "Обмен данными в 'новой' реализации", "")
+                BiRel(ca_proxy, ca_movies_metadata, "Обмен данными в 'новой' реализации", "")
+                BiRel(ca_proxy, ca_storage, "Обмен данными в 'новой' реализации", "")
+                BiRel(ca_proxy, ca_ratings, "Обмен данными в 'новой' реализации", "")
+                BiRel(ca_proxy, ca_recommendations, "Обмен данными в 'новой' реализации", "")
+
+                BiRel(ca_recommendations, recommendation_system_queue, "Обмен данными для получения рекомендаций для пользователя", "")
+                BiRel(recommendation_system_queue, recommendation_system_back, "Обмен данными ", "")
+
+                BiRel(ca_payments, payment_system, "Обмен данными для обеспечения обработки платедей пользователя", "")
+
+                BiRel(ca_general_logic, onlinecimena, "Обмен данными (требования не специфицированы)", "")
+
+            }
+
+            Boundary(bff_services, "Сервисы Backend for frontend") {
+                Container(ca_bff_mobile, "BFF для мобильных клиентов", "GraphQL", )
+                Container(ca_bff_desktop, "BFF для десктопных клиентов", "GraphQL", )
+                Container(ca_bff_tv, "BFF для TV клиентов", "GraphQL", )
+            }
+
+            Boundary(kafka_test, "Тестирование Кафки для дальнейшего распила монолита") {
+                SystemQueue(ca_queue, "MessageBroker", "Kafka")
+
+                Container(ca_events, "Тест обработки сообщений кафки ", "Go")
+
+                Rel(ca_postman, ca_events, "Генерация события о Фильме", "")
+                Rel(ca_postman, ca_events, "Генерация события о Пользователе", "")
+                Rel(ca_postman, ca_events, "Генерация события о Платеже", "")
+
+                Rel(ca_events, ca_queue, "Передача события о Фильме", "")
+                Rel(ca_events, ca_queue, "Передача события о Пользователе", "")
+                Rel(ca_events, ca_queue, "Передача события о Платеже", "")
+
+                Rel(ca_queue, ca_events, "Передача события о Фильме", "")
+                Rel(ca_queue, ca_events, "Передача события о Пользователе", "")
+                Rel(ca_queue, ca_events, "Передача события о Платеже", "")
+
+                Rel(ca_events, ca_events, "Обработка события о Фильме", "")
+                Rel(ca_events, ca_events, "Обработка события о Пользователе", "")
+                Rel(ca_events, ca_events, "Обработка события о Платеже", "")
+            }
+
+            Boundary(ca_current_services, "Старые сервис(ы) as is архитектуры") {
+                Container(ca_monolith, "Старый монолит", "techonology", )
+                ContainerDb(ca_s3, "S3 хранилище", "minio", )
+
+                BiRel(ca_storage, ca_s3, "Отдача и получение бинарного контента", "")
+                BiRel(ca_monolith, ca_s3, "Отдача и получение бинарного контента", "")
+                BiRel(ca_monolith, ca_proxy, "Обмен данными в 'старой' реализации для постепенного внедрения новой функциональности", "")
+
+            }
+
+            Boundary(misc_microservices, "Platform services") {
+                Container(plt_audit, "Сервис Аудита", "C#, PostgreSQL")
+                Container(plt_logging, "Сервис Логирования", "Opensearch")
+                Container(plt_front_logging, "Сервис Логирования Ошибок FrontEnd", "Sentry")
+                Container(plt_tracing, "Сервис Трассировки", "Zipkin|Jaeger")
+                Container(plt_metrics, "Сервис технологических метрик", "OpenTelemetry, Prometheus, Graphana")
+                Container(plt_business_metrics, "Cервис бизнес-метрик", "Prometheus, Graphana")
+
+                Rel_D(ca_microservices, misc_microservices, "Отгрузка технологических данных", "")
+                Rel_D(ca_current_services, misc_microservices, "Отгрузка технологических данных", "")
+                Rel_D(bff_services, misc_microservices, "Отгрузка технологических данных", "")
+                Rel_D(frontend, misc_microservices, "Отгрузка технологических данных", "")
+                Rel_D(kafka_test, misc_microservices, "Отгрузка технологических данных", "")
+
+            }
+
+            
+
+        }
+
+    }
+
+}
+
+
+
+
+
+'##########
+'  КЛИЕНТ
+'##########
+Rel_D(user, front_web, "<<Uses>>", "")
+Rel_D(user, front_android, "<<Uses>>", "")
+Rel_D(user, front_ios, "<<Uses>>", "")
+Rel_D(user, front_tv, "<<Uses>>", "")
+
+
+BiRel_D(ca_bff_desktop, front_web, "Обмен данными")
+BiRel_D(ca_bff_mobile, front_android, "Обмен данными", "")
+BiRel_D(ca_bff_mobile, front_ios, "Обмен данными", "")
+BiRel_D(ca_bff_tv, front_tv, "Обмен данными", "")
+
+
+@enduml
