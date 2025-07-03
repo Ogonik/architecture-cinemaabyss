@@ -5,7 +5,14 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "GRADUAL_MIGRATION": "true",
+
+        "MONOLITH_URL": "http://monolith:8080",
+        "MOVIES_SERVICE_URL": "http://movies-service:8081",
+        "EVENTS_SERVICE_URL": "http://events-service:8082",
+        "MOVIES_MIGRATION_PERCENT": "50"
+
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5182"
@@ -30,11 +37,22 @@
     },
     "Container (Dockerfile)": {
       "commandName": "Docker",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
       "environmentVariables": {
-        "ASPNETCORE_HTTPS_PORTS": "8081",
-        "ASPNETCORE_HTTP_PORTS": "8080"
+
+        "GRADUAL_MIGRATION": "false",
+
+        "MONOLITH_URL": "http://monolith:8080",
+        "MOVIES_SERVICE_URL": "http://movies-service:8081",
+        "EVENTS_SERVICE_URL": "http://events-service:8082",
+        "MOVIES_MIGRATION_PERCENT": "50",
+
+
+        "ASPNETCORE_HTTPS_PORTS": "8800",
+        "ASPNETCORE_HTTP_PORTS": "8000",
+        "ASPNETCORE_URLS": "http://+:8000"
+
       },
       "publishAllPorts": true,
       "useSSL": true
