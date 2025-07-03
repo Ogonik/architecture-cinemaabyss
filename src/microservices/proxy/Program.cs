@@ -1,6 +1,7 @@
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.HttpLogging;
+using Serilog;
 using System.Reflection.Metadata.Ecma335;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Transforms;
@@ -16,6 +17,17 @@ namespace ProxyGradualMigration
             builder.Configuration.AddEnvironmentVariables();
 
             _ = bool.TryParse(Environment.GetEnvironmentVariable("GRADUAL_MIGRATION") ?? throw new Exception("GRADUAL_MIGRATION env not set"), out bool isGradualMigration);
+
+            Log.Logger = new LoggerConfiguration()
+                            .ReadFrom.Configuration(builder.Configuration)
+                            .CreateLogger();
+
+            builder.Services.AddSerilog(Log.Logger);
+            builder.Host.UseSerilog((context, configuration) =>
+                configuration.ReadFrom.Configuration(context.Configuration));
+
+            Log.Logger.Information("WebApp builder created. Starting up.");
+
 
             builder.Services.AddReverseProxy().LoadFromMemory(GetRoutes(isGradualMigration), GetClusters(isGradualMigration));
 
@@ -39,7 +51,7 @@ namespace ProxyGradualMigration
 
             app.MapGet("/health", () =>
             {
-                return Results.Ok("CimenaAbyss Proxy Service is ok :)");
+                return Results.Ok("Strangler Fig Proxy is healthy");
             });
 
             app.Run();
@@ -60,13 +72,13 @@ namespace ProxyGradualMigration
                 }
             };
             routeMoviesWithMigration = routeMoviesWithMigration
-                .WithTransformPathRemovePrefix("/api/movies")
+               // .WithTransformPathRemovePrefix("/api/movies")
                 .WithTransformResponseHeader(headerName: "Source", value: "YARP", append: true, condition: ResponseCondition.Success);
 
             // если есть /api/events/* --> на отдельный кл
             var routeEventsConfig = new RouteConfig()
             {
-                RouteId = "all, but movies",
+                RouteId = "events",
                 Order = 20,
                 ClusterId = "cinema_abyss_events_testing",
                 Match = new RouteMatch
@@ -114,6 +126,7 @@ namespace ProxyGradualMigration
             var moviesRequestsPercentageString = Environment.GetEnvironmentVariable("MOVIES_MIGRATION_PERCENT") ?? throw new Exception("MOVIES_MIGRATION_PERCENT env not set");
 
             _ = int.TryParse(moviesRequestsPercentageString, out int moviesRequestsPercentage);
+            Console.WriteLine($"moviesRequestsPercentageString = {moviesRequestsPercentageString}");
             if (!(moviesRequestsPercentage > 0 && moviesRequestsPercentage < 100)) { throw new Exception("MOVIES_MIGRATION_PERCENT is not correct"); }
 
             var moviesMigrationClusterMonolithDestination = new DestinationConfig()

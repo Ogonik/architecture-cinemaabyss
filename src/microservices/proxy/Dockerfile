@@ -5,8 +5,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER $APP_UID
 WORKDIR /app
-EXPOSE 8800
 EXPOSE 8000
+EXPOSE 8100
 
 
 # This stage is used to build the service project
