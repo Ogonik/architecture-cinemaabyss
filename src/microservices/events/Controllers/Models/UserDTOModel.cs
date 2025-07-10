@@ -18,6 +18,6 @@ namespace EventsKafkaTest.Controllers.Models
         public required string Action { get; set; }
 
         [JsonPropertyName("email")]
-        public required string Email { get; set; }
+        public string? Email { get; set; }
     }
 }

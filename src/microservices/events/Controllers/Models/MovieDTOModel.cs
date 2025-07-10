@@ -24,6 +24,6 @@ namespace EventsKafkaTest.Controllers.Models
         public float Rating { get; set; }
 
         [JsonPropertyName("genres")]
-        public required List<string> Genres { get; set; }       
+        public List<string>? Genres { get; set; }       
     }
 }

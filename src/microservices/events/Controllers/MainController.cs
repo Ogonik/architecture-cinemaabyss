@@ -44,7 +44,7 @@ namespace EventsKafkaTest.Controllers
             };
 
 
-            return new OkObjectResult(result);
+            return new CreatedResult(string.Empty, result);
         }
 
         [HttpPost("payment")]
@@ -67,7 +67,8 @@ namespace EventsKafkaTest.Controllers
             };
 
 
-            return new OkObjectResult(result);
+            return new CreatedResult(string.Empty, result);
+
         }
 
         [HttpPost("user")]
@@ -91,7 +92,8 @@ namespace EventsKafkaTest.Controllers
             };
 
 
-            return new OkObjectResult(result);
+            return new CreatedResult(string.Empty, result);
+
         }
     }
 }
