@@ -72,7 +72,7 @@ namespace ProxyGradualMigration
                 }
             };
             routeMoviesWithMigration = routeMoviesWithMigration
-               // .WithTransformPathRemovePrefix("/api/movies")
+                .WithTransformPathRemovePrefix("/api/movies")
                 .WithTransformResponseHeader(headerName: "Source", value: "YARP", append: true, condition: ResponseCondition.Success);
 
             // если есть /api/events/* --> на отдельный кл
@@ -138,7 +138,7 @@ namespace ProxyGradualMigration
             };
             var moviesMigrationClusterMoviesService = new DestinationConfig()
             {
-                Address = moviesServiceAddress,
+                Address = moviesServiceAddress + "/api/movies",
                 Metadata = new Dictionary<string, string> {
                     { "Weight", $"{moviesRequestsPercentage}" }
                 }
