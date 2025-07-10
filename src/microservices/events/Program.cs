@@ -55,7 +55,7 @@ namespace EventsKafkaTest
 
             app.MapGet("/health", () =>
             {
-                return Results.Ok(new Tuple<string, bool>("status", true));
+                return Results.Ok(new { status = true });
             });
 
             app.Run();
