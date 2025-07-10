@@ -5,7 +5,13 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "KafkaProducerSettings__BootstrapServers": "localhost:9092",
+        "KafkaConsumerSettings__BootstrapServers": "localhost:9092",
+        "KafkaConsumerSettings__ConsumerGroup": "1",
+        "KafkaConsumerSettings__MoviesTopicName":"movie-events",
+        "KafkaConsumerSettings__UsersTopicName":"user-events",
+        "KafkaConsumerSettings__PaymentsTopicName":"payment-events"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5229"
