@@ -16,7 +16,7 @@
     },
     {
       "key": "eventsServiceUrl",
-      "value": "http://cinemaabyss.example.com",
+      "value": "http://cinemaabyss.example.com/api/events",
       "type": "default",
       "enabled": true
     },

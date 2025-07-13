@@ -25,7 +25,59 @@ spec:
     spec:
       containers:
       - name: events-service
-       .... тут
+        #ghcr.io/ogonik/architecture-cinemaabyss/events-service:latest
+        image: {{ .Values.eventsService.image.repository }}:{{ .Values.eventsService.image.tag }}
+        imagePullPolicy: {{ .Values.eventsService.image.pullPolicy }} 
+        ports:
+        - containerPort: {{ .Values.eventsService.ports.containerPort }}
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        - name: ASPNETCORE_URLS
+          value: "http://+:{{ .Values.eventsService.service.targetPort }}"
+        - name: ASPNETCORE_HTTP_PORTS
+          value: "{{ .Values.eventsService.service.targetPort }}"
+
+        - name: KafkaProducerSettings__BootstrapServers
+          value: "kafka:9092"
+        - name: KafkaConsumerSettings__BootstrapServers
+          value: "kafka:9092"
+
+        - name: KafkaConsumerSettings__ConsumerGroup
+          value: "1"
+        - name: KafkaConsumerSettings__MoviesTopicName
+          value: "movie-events"
+        - name: KafkaConsumerSettings__UsersTopicName
+          value: "user-events"
+        - name: KafkaConsumerSettings__PaymentsTopicName
+          value: "payment-events"
+        envFrom:
+        - configMapRef:
+            name: cinemaabyss-config
+        - secretRef:
+            name: cinemaabyss-secrets
+        resources:
+          limits:
+            cpu: "{{ .Values.eventsService.resources.limits.cpu }}"
+            memory: "{{ .Values.eventsService.resources.limits.memory }}"
+          requests:
+            cpu: "{{ .Values.eventsService.resources.requests.cpu }}"
+            memory: "{{ .Values.eventsService.resources.requests.memory }}"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.eventsService.service.targetPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.eventsService.service.targetPort }}
+          initialDelaySeconds: 15
+          periodSeconds: 60
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: dockerconfigjson
 ---
 apiVersion: v1
 kind: Service
@@ -37,5 +89,10 @@ metadata:
     app.kubernetes.io/name: {{ include "cinemaabyss.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
- ........ и тут
+  selector:
+    app: events-service
+  ports:
+  - port: {{ .Values.eventsService.service.port }}
+    targetPort: {{ .Values.eventsService.service.targetPort }}
+  type: ClusterIP
 {{- end }}
