@@ -127,7 +127,7 @@ namespace ProxyGradualMigration
 
             _ = int.TryParse(moviesRequestsPercentageString, out int moviesRequestsPercentage);
             Console.WriteLine($"moviesRequestsPercentageString = {moviesRequestsPercentageString}");
-            if (!(moviesRequestsPercentage > 0 && moviesRequestsPercentage < 100)) { throw new Exception("MOVIES_MIGRATION_PERCENT is not correct"); }
+            if (!(moviesRequestsPercentage >= 0 && moviesRequestsPercentage <= 100)) { throw new Exception("MOVIES_MIGRATION_PERCENT is not correct"); }
 
             var moviesMigrationClusterMonolithDestination = new DestinationConfig()
             {
