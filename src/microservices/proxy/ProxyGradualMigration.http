@@ -1,0 +1,6 @@
+@ProxyGradualMigration_HostAddress = http://localhost:5182
+
+GET {{ProxyGradualMigration_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

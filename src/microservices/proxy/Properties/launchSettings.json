@@ -1,0 +1,70 @@
+{
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "GRADUAL_MIGRATION": "true",
+
+        "MONOLITH_URL": "http://monolith:8080",
+        "MOVIES_SERVICE_URL": "http://movies-service:8081",
+        "EVENTS_SERVICE_URL": "http://events-service:8082",
+        "MOVIES_MIGRATION_PERCENT": "50"
+
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5182"
+    },
+    "https": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7078;http://localhost:5182"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchBrowser": false,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "environmentVariables": {
+
+        "GRADUAL_MIGRATION": "false",
+
+        "MONOLITH_URL": "http://monolith:8080",
+        "MOVIES_SERVICE_URL": "http://movies-service:8081",
+        "EVENTS_SERVICE_URL": "http://events-service:8082",
+        "MOVIES_MIGRATION_PERCENT": "50",
+
+
+        "ASPNETCORE_HTTPS_PORTS": "8800",
+        "ASPNETCORE_HTTP_PORTS": "8000",
+        "ASPNETCORE_URLS": "http://+:8000"
+
+      },
+      "publishAllPorts": true,
+      "useSSL": true
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:6092",
+      "sslPort": 44355
+    }
+  }
+}

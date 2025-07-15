@@ -5,7 +5,7 @@ global:
 
 # Image pull secrets
 imagePullSecrets:
-  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6
+  dockerconfigjson: ewogICJhdXRocyI6IHsKICAgICJkb2NrZXJodWIuZG0tc29sdXRpb25zLnJ1IjogewogICAgICAic2VydmVyYWRkcmVzcyI6ICJkb2NrZXJodWIuZG0tc29sdXRpb25zLnJ1IgogICAgfSwKICAgICJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOiB7CiAgICAgICJzZXJ2ZXJhZGRyZXNzIjogImh0dHBzOi8vaW5kZXguZG9ja2VyLmlvL3YxLyIKICAgIH0sCiAgICAiZ2hjci5pbyI6IHsKICAgICAgImF1dGgiOiAiVDJkdmJtbHJPbWRvY0Y4MGFGVlhZVXg2Wm0welVrUnRiVEpuYTFkaWFXdEJTekY2Y21jeGJtUXdVMHRoU1ZvPSIKICAgIH0KICB9LAogICJjcmVkc1N0b3JlIjogImRlc2t0b3AiLAogICJjdXJyZW50Q29udGV4dCI6ICJkZXNrdG9wLWxpbnV4IiwKICAicGx1Z2lucyI6IHsKICAgICIteC1jbGktaGludHMiOiB7CiAgICAgICJlbmFibGVkIjogInRydWUiCiAgICB9LAogICAgImRlYnVnIjogewogICAgICAiaG9va3MiOiAiZXhlYyIKICAgIH0sCiAgICAic2NvdXQiOiB7CiAgICAgICJob29rcyI6ICJwdWxsLGJ1aWxkeCBidWlsZCIKICAgIH0KICB9LAogICJmZWF0dXJlcyI6IHsKICAgICJob29rcyI6ICJ0cnVlIgogIH0KfQo=
 # Database configuration
 database:
   host: postgres
@@ -33,7 +33,7 @@ database:
 monolith:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/monolith
+    repository: ghcr.io/ogonik/architecture-cinemaabyss/monolith
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -53,7 +53,7 @@ monolith:
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
+    repository: ghcr.io/ogonik/architecture-cinemaabyss/proxy-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -64,6 +64,8 @@ proxyService:
     requests:
       cpu: 100m
       memory: 128Mi
+  ports:
+    containerPort: 8000
   service:
     port: 80
     targetPort: 8000
@@ -73,7 +75,7 @@ proxyService:
 moviesService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/movies-service
+    repository: ghcr.io/ogonik/architecture-cinemaabyss/movies-service
     tag: latest
     pullPolicy: Always
   replicas: 1
@@ -92,11 +94,11 @@ moviesService:
 # Events service configuration
 eventsService:
   enabled: true
+  replicas: 1
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/events-service
+    repository: ghcr.io/ogonik/architecture-cinemaabyss/events-service
     tag: latest
     pullPolicy: Always
-  replicas: 1
   resources:
     limits:
       cpu: 300m
@@ -104,6 +106,8 @@ eventsService:
     requests:
       cpu: 100m
       memory: 128Mi
+  ports:
+    containerPort: 8082
   service:
     port: 8082
     targetPort: 8082
@@ -164,22 +168,24 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    kubernetes.io/ingress.class: nginx
+    kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/use-regex: "true"
+    #nginx.ingress.kubernetes.io/rewrite-target: /
   hosts:
     - host: cinemaabyss.example.com
       paths:
+        - path: /api/events/?(.*)
+          pathType: ImplementationSpecific
+          service: events-service
+          port: 8082
         - path: /
           pathType: Prefix
           service: proxy-service
-          port: 80
-        - path: /api/events
-          pathType: Prefix
-          service: events-service
-          port: 8082
+          port: 8000
 
 # Application configuration
 config:
   # Strangler Fig configuration
   gradualMigration: "true"
-  moviesMigrationPercent: "100"
+  moviesMigrationPercent: "80"
