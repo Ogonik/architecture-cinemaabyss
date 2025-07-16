@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS builder
+FROM golang@sha256:9b07790bb99f0cba351ed7199a421b6281b0d84325647c83d009f6540f6ceb90 AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o movies-service .
 
 # Use a smaller image for the final application
-FROM alpine:latest  
+FROM alpine@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1   
 
 RUN apk --no-cache add ca-certificates
 

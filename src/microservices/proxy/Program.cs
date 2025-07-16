@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.HttpLogging;
 using Serilog;
 using System.Reflection.Metadata.Ecma335;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.LoadBalancing;
 using Yarp.ReverseProxy.Transforms;
 
 namespace ProxyGradualMigration
@@ -23,17 +24,20 @@ namespace ProxyGradualMigration
                             .CreateLogger();
 
             builder.Services.AddSerilog(Log.Logger);
+            builder.Services.AddSingleton<ILoadBalancingPolicy, WeightRoundRobinLoadBalancingPolicy>();
             builder.Host.UseSerilog((context, configuration) =>
                 configuration.ReadFrom.Configuration(context.Configuration));
 
             Log.Logger.Information("WebApp builder created. Starting up.");
 
 
-            builder.Services.AddReverseProxy().LoadFromMemory(GetRoutes(isGradualMigration), GetClusters(isGradualMigration));
+            builder.Services.AddReverseProxy()
+                .LoadFromMemory(GetRoutes(isGradualMigration), GetClusters(isGradualMigration));
+                //.AddConfigFilter<WeightConfigFilter>();
 
             builder.Services.AddHttpLogging(logging =>
             {
-                logging.LoggingFields = HttpLoggingFields.Request | HttpLoggingFields.Response;
+                logging.LoggingFields = HttpLoggingFields.RequestPath | HttpLoggingFields.RequestMethod | HttpLoggingFields.ResponseStatusCode;
             });
 
             // Add services to the container.
@@ -149,7 +153,8 @@ namespace ProxyGradualMigration
                 Destinations = new Dictionary<string, DestinationConfig> {
                     { "monolith", moviesMigrationClusterMonolithDestination },
                     { "movies_service",moviesMigrationClusterMoviesService },
-                }
+                },
+                LoadBalancingPolicy = "WeightRoundRobin"//WeightRoundRobinLoadBalancingPolicy.Name
             };
 
             var eventsClusterDestination = new DestinationConfig() {Address = eventsServiceAddress,};       
@@ -177,7 +182,11 @@ namespace ProxyGradualMigration
             };
 
             if (isGradualMigration)
+            {
                 clusterConfigs.Add(moviesMigrationCluster);
+            }
+
+            
 
             return clusterConfigs;
 

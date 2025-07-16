@@ -11,7 +11,7 @@
         "MONOLITH_URL": "http://monolith:8080",
         "MOVIES_SERVICE_URL": "http://movies-service:8081",
         "EVENTS_SERVICE_URL": "http://events-service:8082",
-        "MOVIES_MIGRATION_PERCENT": "50"
+        "MOVIES_MIGRATION_PERCENT": "0"
 
       },
       "dotnetRunMessages": true,
